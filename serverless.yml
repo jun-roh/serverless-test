@@ -1,0 +1,59 @@
+# Welcome to serverless. Read the docs
+# https://serverless.com/framework/docs/
+
+# Serverless.yml is the configuration the CLI
+# uses to deploy your code to your provider of choice
+
+# The `service` block is the name of the service
+service: test-api
+
+# The `provider` block defines where your service will be deployed
+provider:
+  name: aws
+  runtime: python3.6
+  memorySize: 1024 # optional, default is 1024
+  timeout: 300 # optional, default is 6
+  profile: jun-dev
+  role: arn:aws:iam::#######################
+  stage: ${opt:stage, 'dev'} # 커맨드 라인에서 스테이지 명시 안하면 dev으로 처리한다.
+  region: ap-northeast-2
+  versionFunctions: false
+  environment:
+    TZ: Asiz/Seoul
+    serviceType: ${self:provider.stage}
+  vpc:
+    securityGroupIds:
+      - sg-####################
+    subnetIds:
+      - subnet-##################
+
+# you can add packaging information here
+package:
+  individually: true
+  exclude:
+    - '**'
+
+# The `functions` block defines what code to deploy
+functions:
+  hello_world_api:
+    memorySize: 1024
+    handler: hello_world_api.run
+    events:
+      - http:
+          path: hello_world_api
+          method: post
+          cors: true
+          private: true
+    package:
+      include:
+        - hello_world_api.py
+
+  hello_world_cron:
+    handler: hello_world_cron.run
+    events:
+      - schedule:
+          rate: cron(*/5 * * * ? *) # 5분마다 실행
+          enabled: true
+    package:
+      include:
+        - hello_world_cron.py
